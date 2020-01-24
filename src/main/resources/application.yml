@@ -1,0 +1,10 @@
+
+spring:
+  data:
+    mongodb:
+      authentication-database: admin
+      username: root
+      password: P@ssw0rdRoot
+      database: challenge_db
+      port: 27017
+      host: localhost
