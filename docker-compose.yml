@@ -16,7 +16,7 @@ services:
     links:
       - mongo
     networks:
-      - desafio-network
+      - challenge-network
 
   mongo:
     image: mongo
@@ -30,8 +30,8 @@ services:
     volumes:
       - ./mongo-volumes:/data/db
     networks:
-      - desafio-network
+      - challenge-network
 
 networks: 
-    desafio-network:
+    challenge-network:
       driver: bridge
