@@ -46,10 +46,6 @@ public class UserImageController {
 	
 	@GetMapping("/")
 	public ResponseEntity<List<UserImageResponseDTO>> list(@RequestParam("iduser") String idUser){
-		if(idUser == null || idUser.isEmpty())
-			return new ResponseEntity<>(new ArrayList<>(), 
-					HeaderUtil.getHeader(), HttpStatus.PRECONDITION_REQUIRED);
-
 		try {
 			List<UserImageResponseDTO> response = userImageService.getImage(idUser);
 			if(response.isEmpty())

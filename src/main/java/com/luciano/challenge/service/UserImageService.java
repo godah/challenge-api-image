@@ -48,7 +48,12 @@ public class UserImageService {
 	}
 
 	public List<UserImageResponseDTO> getImage(String id) {
-		GridFSFindIterable files = gridFsTemplate.find(new Query(Criteria.where("_id").is(id)));
+		GridFSFindIterable files;
+		if(id == null || id.isEmpty()) {
+			files = gridFsTemplate.find(new Query(Criteria.where("_id").all(id)));//TODO verificar
+		}else {			
+			files = gridFsTemplate.find(new Query(Criteria.where("_id").is(id)));
+		}
 		if(!files.iterator().hasNext())
 			return new ArrayList<>();
 		
