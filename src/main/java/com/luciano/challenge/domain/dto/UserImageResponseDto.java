@@ -2,7 +2,7 @@ package com.luciano.challenge.domain.dto;
 
 import java.io.Serializable;
 
-public class UserImageResponseDTO implements Serializable {
+public class UserImageResponseDto implements Serializable {
 
 	private static final long serialVersionUID = -2232886320323739437L;
 	private String idUser;
@@ -40,16 +40,6 @@ public class UserImageResponseDTO implements Serializable {
 
 	public void setUploadStatus(String uploadStatus) {
 		this.uploadStatus = uploadStatus;
-	}
-
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
-
-	@Override
-	public String toString() {
-		return "UserImageResponseDTO [idUser=" + idUser + ", fileName=" + fileName + ", fileType=" + fileType
-				+ ", uploadStatus=" + uploadStatus + "]";
 	}
 
 }

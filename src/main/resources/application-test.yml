@@ -1,0 +1,17 @@
+
+spring:
+  data:
+    mongodb:
+      authentication-database: admin
+      username: root
+      password: P@ssw0rdRoot
+      database: challenge_db_test
+      port: 27017
+      host: localhost
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+      enabled: true
+  jpa:
+    show-sql: true

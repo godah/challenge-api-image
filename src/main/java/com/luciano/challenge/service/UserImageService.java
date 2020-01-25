@@ -6,8 +6,6 @@ import java.util.List;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -15,7 +13,7 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.luciano.challenge.domain.dto.UserImageResponseDTO;
+import com.luciano.challenge.domain.dto.UserImageResponseDto;
 import com.luciano.challenge.domain.enumerate.AllowedFileTypeEnum;
 import com.luciano.challenge.domain.enumerate.StatusUploadEnum;
 import com.luciano.challenge.exception.NoContentException;
@@ -40,15 +38,13 @@ public class UserImageService {
 
 	private static final String METADATA_ID_USER = "metadata.idUser";
 
-	private final Logger log = LoggerFactory.getLogger(UserImageService.class);
-
 	@Autowired
 	private GridFsTemplate gridFsTemplate;
 
-	public UserImageResponseDTO createImage(MultipartFile file, String idUser) throws IOException, PreconditionRequiredException {
-		if (AllowedFileTypeEnum.get(file.getContentType()) == null)
-			throw new PreconditionRequiredException();
+	public UserImageResponseDto createImage(MultipartFile file, String idUser) throws PreconditionRequiredException, IOException {
 		try {
+			if (AllowedFileTypeEnum.get(file.getContentType()) == null)
+				throw new PreconditionRequiredException("Content Type not allowed.");
 			DBObject metaData = new BasicDBObject();
 			metaData.put(ID_USER, idUser);
 			metaData.put(FILE_NAME, file.getOriginalFilename());
@@ -57,14 +53,13 @@ public class UserImageService {
 			ObjectId id = gridFsTemplate.store(file.getInputStream(), file.getName(), file.getContentType(), metaData);
 			GridFSFile fileSaved = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(id.toString())));
 			return createResponse(fileSaved);
-		} catch (IOException e) {
-			log.error(e.getMessage());
-			throw new IOException(e.getMessage());
+		} catch (IOException |PreconditionRequiredException e) {
+			throw new PreconditionRequiredException(e.getMessage());
 		}
 	}
 
-	private UserImageResponseDTO createResponse(GridFSFile fileSaved) {
-		UserImageResponseDTO image = new UserImageResponseDTO();
+	private UserImageResponseDto createResponse(GridFSFile fileSaved) {
+		UserImageResponseDto image = new UserImageResponseDto();
 		Document doc = fileSaved.getMetadata();
 		image.setIdUser(doc.getString(ID_USER).toString());
 		image.setFileName(doc.getString(FILE_NAME).toString());
@@ -73,7 +68,7 @@ public class UserImageService {
 		return image;
 	}
 
-	public List<UserImageResponseDTO> getImage(String fileName) throws NotFoundException {
+	public List<UserImageResponseDto> getImage(String fileName) throws NotFoundException {
 		GridFSFindIterable files;
 		if (fileName == null || fileName.isEmpty()) {
 			files = gridFsTemplate.find(new Query());
@@ -83,11 +78,11 @@ public class UserImageService {
 		if (!files.iterator().hasNext())
 			throw new NotFoundException();
 
-		List<UserImageResponseDTO> response = createResponse(files);
+		List<UserImageResponseDto> response = createResponse(files);
 		return response;
 	}
 
-	public List<UserImageResponseDTO> delete(String idUser) throws NoContentException, PreconditionRequiredException {
+	public List<UserImageResponseDto> delete(String idUser) throws NoContentException, PreconditionRequiredException {
 		if (idUser == null || idUser.isEmpty()) {
 			throw new PreconditionRequiredException();
 		} else {
@@ -95,16 +90,16 @@ public class UserImageService {
 			if (!files.iterator().hasNext())
 				throw new NoContentException();
 
-			List<UserImageResponseDTO> response = createResponse(files);
+			List<UserImageResponseDto> response = createResponse(files);
 			gridFsTemplate.delete(new Query(Criteria.where(METADATA_ID_USER).is(idUser)));
 			return response;
 		}
 	}
 
-	private List<UserImageResponseDTO> createResponse(GridFSFindIterable files) {
-		List<UserImageResponseDTO> response = new ArrayList<>();
+	private List<UserImageResponseDto> createResponse(GridFSFindIterable files) {
+		List<UserImageResponseDto> response = new ArrayList<>();
 		for (GridFSFile file : files) {
-			UserImageResponseDTO image = new UserImageResponseDTO();
+			UserImageResponseDto image = new UserImageResponseDto();
 			Document doc = file.getMetadata();
 			image.setIdUser(doc.getString(ID_USER).toString());
 			image.setFileName(doc.getString(FILE_NAME).toString());

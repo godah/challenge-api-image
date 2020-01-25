@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.luciano.challenge.domain.dto.UserImageResponseDTO;
+import com.luciano.challenge.domain.dto.UserImageResponseDto;
 import com.luciano.challenge.exception.NoContentException;
 import com.luciano.challenge.exception.NotFoundException;
 import com.luciano.challenge.exception.PreconditionRequiredException;
@@ -31,40 +31,34 @@ public class UserImageController {
 	private UserImageService userImageService;
 	
 	@PostMapping("/")
-	public ResponseEntity<UserImageResponseDTO> createImage(@RequestParam("idUser") String idUser, 
+	public ResponseEntity<UserImageResponseDto> createImage(@RequestParam("idUser") String idUser, 
 			  @RequestParam("file") MultipartFile file, Model model) {
 		try {
-			UserImageResponseDTO response = userImageService.createImage(file, idUser);
+			UserImageResponseDto response = userImageService.createImage(file, idUser);
 			return new ResponseEntity<>(response,
 					HeaderUtil.getHeader(), HttpStatus.CREATED);
-		} catch (IOException e) {
-			return new ResponseEntity<>(null, 
-					HeaderUtil.getHeader(), HttpStatus.INTERNAL_SERVER_ERROR);
-		} catch (PreconditionRequiredException e) {
+		} catch (PreconditionRequiredException | IOException e) {
 			return new ResponseEntity<>(null, 
 					HeaderUtil.getHeader(), HttpStatus.PRECONDITION_REQUIRED);
 		}
 	}
 	
 	@GetMapping("/")
-	public ResponseEntity<List<UserImageResponseDTO>> list(@RequestParam(required = false) String fileName){
+	public ResponseEntity<List<UserImageResponseDto>> list(@RequestParam(required = false) String fileName){
 		try {
-			List<UserImageResponseDTO> response = userImageService.getImage(fileName);
+			List<UserImageResponseDto> response = userImageService.getImage(fileName);
 			return new ResponseEntity<>(response,
 					HeaderUtil.getHeader(), HttpStatus.OK);
 		} catch (NotFoundException e) {
 			return new ResponseEntity<>(new ArrayList<>(), 
 					HeaderUtil.getHeader(), HttpStatus.NOT_FOUND);
-		} catch (Exception e) {
-			return new ResponseEntity<>(new ArrayList<>(), 
-					HeaderUtil.getHeader(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
 	@DeleteMapping("/")
-	public ResponseEntity<List<UserImageResponseDTO>> delete(@RequestParam("idUser") String idUser) {
+	public ResponseEntity<List<UserImageResponseDto>> delete(@RequestParam("idUser") String idUser) {
 		try {
-			List<UserImageResponseDTO> response = userImageService.delete(idUser);
+			List<UserImageResponseDto> response = userImageService.delete(idUser);
 			return new ResponseEntity<>(response,
 					HeaderUtil.getHeader(), HttpStatus.OK);
 		} catch (NoContentException e) {
@@ -73,9 +67,6 @@ public class UserImageController {
 		} catch (PreconditionRequiredException e) {
 			return new ResponseEntity<>(null, 
 					HeaderUtil.getHeader(), HttpStatus.PRECONDITION_REQUIRED);
-		} catch (Exception e) {
-			return new ResponseEntity<>(null, 
-					HeaderUtil.getHeader(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
