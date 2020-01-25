@@ -1,8 +1,6 @@
 package com.luciano.challenge.controller;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,43 +17,64 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.luciano.challenge.domain.dto.UserImageResponseDTO;
+import com.luciano.challenge.exception.NoContentException;
+import com.luciano.challenge.exception.NotFoundException;
+import com.luciano.challenge.exception.PreconditionRequiredException;
 import com.luciano.challenge.service.UserImageService;
 import com.luciano.challenge.utils.HeaderUtil;
 
 @RestController
-@RequestMapping("/user-image")
+@RequestMapping("/user-images")
 public class UserImageController {
 	
 	@Autowired
 	private UserImageService userImageService;
 	
 	@PostMapping("/")
-	public ResponseEntity<String> createImage(@RequestParam("iduser") String idUser, 
+	public ResponseEntity<UserImageResponseDTO> createImage(@RequestParam("idUser") String idUser, 
 			  @RequestParam("file") MultipartFile file, Model model) {
-		String id;
 		try {
-			id = userImageService.createImage(file, idUser);
-			String response = "redirect:/user-image/" + id;
-			return ResponseEntity.created(new URI(response))
-	            .headers(HeaderUtil.getHeader())
-	            .body(response);
-		} catch (IOException | URISyntaxException e) {
-			return new ResponseEntity<>(new String(), 
+			UserImageResponseDTO response = userImageService.createImage(file, idUser);
+			return new ResponseEntity<>(response,
+					HeaderUtil.getHeader(), HttpStatus.CREATED);
+		} catch (IOException e) {
+			return new ResponseEntity<>(null, 
 					HeaderUtil.getHeader(), HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (PreconditionRequiredException e) {
+			return new ResponseEntity<>(null, 
+					HeaderUtil.getHeader(), HttpStatus.PRECONDITION_REQUIRED);
 		}
 	}
 	
 	@GetMapping("/")
-	public ResponseEntity<List<UserImageResponseDTO>> list(@RequestParam("iduser") String idUser){
+	public ResponseEntity<List<UserImageResponseDTO>> list(@RequestParam(required = false) String fileName){
 		try {
-			List<UserImageResponseDTO> response = userImageService.getImage(idUser);
-			if(response.isEmpty())
-				return new ResponseEntity<>(response, 
-						HeaderUtil.getHeader(), HttpStatus.BAD_REQUEST);
+			List<UserImageResponseDTO> response = userImageService.getImage(fileName);
 			return new ResponseEntity<>(response,
 					HeaderUtil.getHeader(), HttpStatus.OK);
+		} catch (NotFoundException e) {
+			return new ResponseEntity<>(new ArrayList<>(), 
+					HeaderUtil.getHeader(), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			return new ResponseEntity<>(new ArrayList<>(), 
+					HeaderUtil.getHeader(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@DeleteMapping("/")
+	public ResponseEntity<List<UserImageResponseDTO>> delete(@RequestParam("idUser") String idUser) {
+		try {
+			List<UserImageResponseDTO> response = userImageService.delete(idUser);
+			return new ResponseEntity<>(response,
+					HeaderUtil.getHeader(), HttpStatus.OK);
+		} catch (NoContentException e) {
+			return new ResponseEntity<>(null, 
+					HeaderUtil.getHeader(), HttpStatus.NO_CONTENT);
+		} catch (PreconditionRequiredException e) {
+			return new ResponseEntity<>(null, 
+					HeaderUtil.getHeader(), HttpStatus.PRECONDITION_REQUIRED);
+		} catch (Exception e) {
+			return new ResponseEntity<>(null, 
 					HeaderUtil.getHeader(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
