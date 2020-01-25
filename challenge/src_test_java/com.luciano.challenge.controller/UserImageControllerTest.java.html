@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>UserImageControllerTest.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">challenge (25/01/2020 18:30:40)</a> &gt; <a href="../../index.html" class="el_group">challenge</a> &gt; <a href="../index.html" class="el_bundle">src/test/java</a> &gt; <a href="index.source.html" class="el_package">com.luciano.challenge.controller</a> &gt; <span class="el_source">UserImageControllerTest.java</span></div><h1>UserImageControllerTest.java</h1><pre class="source lang-java linenums">package com.luciano.challenge.controller;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.luciano.challenge.domain.dto.UserImageResponseDto;
+import com.luciano.challenge.domain.enumerate.AllowedFileTypeEnum;
+import com.luciano.challenge.domain.enumerate.StatusUploadEnum;
+
+@SpringBootTest
+<span class="fc" id="L20">class UserImageControllerTest {</span>
+
+	private static final String ID_USER = &quot;1234&quot;;
+	private MockMvc mockMvc;
+	ObjectMapper mapper;
+	
+	private MockMultipartFile bmpFile;
+	private UserImageResponseDto bmpDto;
+	
+	private MockMultipartFile pngFile;
+	private UserImageResponseDto pngDto;
+	
+	private MockMultipartFile jpegFile;
+	private UserImageResponseDto jpegDto;
+	
+	private MockMultipartFile gifFile;
+	private UserImageResponseDto gifDto;
+	
+	private MockMultipartFile tifFile;
+	
+	
+	@Autowired
+	private UserImageController userImageController;
+	
+	@BeforeEach
+	void setUp() throws Exception {
+<span class="fc" id="L46">		this.mockMvc = MockMvcBuilders.standaloneSetup(userImageController).build();</span>
+<span class="fc" id="L47">		this.mapper = new ObjectMapper();</span>
+		
+<span class="fc" id="L49">		this.bmpFile = new MockMultipartFile(&quot;file&quot;, &quot;bmpFile.bmp&quot;, AllowedFileTypeEnum.BMP.getType(), </span>
+<span class="fc" id="L50">												&quot;Here is my file&quot;.getBytes());</span>
+<span class="fc" id="L51">		this.bmpDto = this.createResponseDTO(bmpFile);</span>
+		
+<span class="fc" id="L53">		this.pngFile = new MockMultipartFile(&quot;file&quot;, &quot;pngFile.png&quot;, AllowedFileTypeEnum.PNG.getType(), </span>
+<span class="fc" id="L54">				&quot;Here is my file&quot;.getBytes());</span>
+<span class="fc" id="L55">		this.pngDto = this.createResponseDTO(pngFile);</span>
+		
+<span class="fc" id="L57">		this.jpegFile = new MockMultipartFile(&quot;file&quot;, &quot;jpegFile.jpg&quot;, AllowedFileTypeEnum.JPEG_JFIF.getType(), </span>
+<span class="fc" id="L58">				&quot;Here is my file&quot;.getBytes());</span>
+<span class="fc" id="L59">		this.jpegDto = this.createResponseDTO(jpegFile);</span>
+		
+<span class="fc" id="L61">		this.gifFile = new MockMultipartFile(&quot;file&quot;, &quot;gifFile.gif&quot;, AllowedFileTypeEnum.GIF.getType(), </span>
+<span class="fc" id="L62">				&quot;Here is my file&quot;.getBytes());</span>
+<span class="fc" id="L63">		this.gifDto = this.createResponseDTO(gifFile);</span>
+		
+<span class="fc" id="L65">		this.tifFile = new MockMultipartFile(&quot;file&quot;, &quot;tifFile.tif&quot;, &quot;image/tif&quot;, </span>
+<span class="fc" id="L66">				&quot;Here is my file&quot;.getBytes());</span>
+		
+<span class="fc" id="L68">	}</span>
+
+	@AfterEach
+	void tearDown() throws Exception {
+<span class="fc" id="L72">	}</span>
+
+	@Test
+	void testCreateImageBmp() throws Exception {
+<span class="fc" id="L76">		this.mockMvc.perform(MockMvcRequestBuilders.multipart(&quot;/user-images/&quot;)</span>
+<span class="fc" id="L77">						.file(bmpFile)</span>
+<span class="fc" id="L78">						.param(&quot;idUser&quot;,bmpDto.getIdUser()))</span>
+<span class="fc" id="L79">					.andExpect(MockMvcResultMatchers.status().isCreated())</span>
+<span class="fc" id="L80">					.andExpect(MockMvcResultMatchers.content().json(mapper.writeValueAsString(bmpDto)));</span>
+<span class="fc" id="L81">	}</span>
+	
+	@Test
+	void testCreateImagePng() throws Exception {
+<span class="fc" id="L85">		this.mockMvc.perform(MockMvcRequestBuilders.multipart(&quot;/user-images/&quot;)</span>
+<span class="fc" id="L86">						.file(pngFile)</span>
+<span class="fc" id="L87">						.param(&quot;idUser&quot;,pngDto.getIdUser()))</span>
+<span class="fc" id="L88">					.andExpect(MockMvcResultMatchers.status().isCreated())</span>
+<span class="fc" id="L89">					.andExpect(MockMvcResultMatchers.content().json(mapper.writeValueAsString(pngDto)));</span>
+<span class="fc" id="L90">	}</span>
+	
+	@Test
+	void testCreateImageJpeg() throws Exception {
+<span class="fc" id="L94">		this.mockMvc.perform(MockMvcRequestBuilders.multipart(&quot;/user-images/&quot;)</span>
+<span class="fc" id="L95">						.file(jpegFile)</span>
+<span class="fc" id="L96">						.param(&quot;idUser&quot;,jpegDto.getIdUser()))</span>
+<span class="fc" id="L97">					.andExpect(MockMvcResultMatchers.status().isCreated())</span>
+<span class="fc" id="L98">					.andExpect(MockMvcResultMatchers.content().json(mapper.writeValueAsString(jpegDto)));</span>
+<span class="fc" id="L99">	}</span>
+	
+	@Test
+	void testCreateImageGif() throws Exception {
+<span class="fc" id="L103">		this.mockMvc.perform(MockMvcRequestBuilders.multipart(&quot;/user-images/&quot;)</span>
+<span class="fc" id="L104">						.file(gifFile)</span>
+<span class="fc" id="L105">						.param(&quot;idUser&quot;,gifDto.getIdUser()))</span>
+<span class="fc" id="L106">					.andExpect(MockMvcResultMatchers.status().isCreated())</span>
+<span class="fc" id="L107">					.andExpect(MockMvcResultMatchers.content().json(mapper.writeValueAsString(gifDto)));</span>
+<span class="fc" id="L108">	}</span>
+	
+	@Test
+	void testCreateImageTif() throws Exception {
+<span class="fc" id="L112">		this.mockMvc.perform(MockMvcRequestBuilders.multipart(&quot;/user-images/&quot;)</span>
+<span class="fc" id="L113">						.file(tifFile)</span>
+<span class="fc" id="L114">						.param(&quot;idUser&quot;,ID_USER))</span>
+<span class="fc" id="L115">					.andExpect(MockMvcResultMatchers.status().isPreconditionRequired());</span>
+<span class="fc" id="L116">	}</span>
+	
+	@Test
+	void testList() throws Exception {
+<span class="fc" id="L120">		this.mockMvc.perform(MockMvcRequestBuilders.get(&quot;/user-images/&quot;))</span>
+<span class="fc" id="L121">					.andExpect(MockMvcResultMatchers.status().isOk());</span>
+<span class="fc" id="L122">	}</span>
+	
+	@Test
+	void testListWithId() throws Exception {
+<span class="fc" id="L126">		this.mockMvc.perform(MockMvcRequestBuilders.get(&quot;/user-images/&quot;)</span>
+<span class="fc" id="L127">						.param(&quot;fileName&quot;, pngDto.getFileName()))</span>
+<span class="fc" id="L128">					.andExpect(MockMvcResultMatchers.status().isOk());</span>
+<span class="fc" id="L129">	}</span>
+	
+	@Test
+	void testListWithIdNotFound() throws Exception {
+<span class="fc" id="L133">		this.mockMvc.perform(MockMvcRequestBuilders.get(&quot;/user-images/&quot;)</span>
+<span class="fc" id="L134">						.param(&quot;fileName&quot;, &quot;xxxxx.xxx&quot;))</span>
+<span class="fc" id="L135">					.andExpect(MockMvcResultMatchers.status().isNotFound());</span>
+<span class="fc" id="L136">	}</span>
+	
+	
+	@Test
+	void testDeleteNoContent() throws Exception {
+<span class="fc" id="L141">		this.mockMvc.perform(MockMvcRequestBuilders.delete(&quot;/user-images/&quot;)</span>
+<span class="fc" id="L142">						.param(&quot;idUser&quot;, &quot;!@#$!@#$!@#$!@#$&quot;))</span>
+<span class="fc" id="L143">					.andExpect(MockMvcResultMatchers.status().isNoContent());</span>
+<span class="fc" id="L144">	}</span>
+	
+	@Test
+	void testDeletePreConditionRequired() throws Exception {
+<span class="fc" id="L148">		this.mockMvc.perform(MockMvcRequestBuilders.delete(&quot;/user-images/&quot;)</span>
+<span class="fc" id="L149">						.param(&quot;idUser&quot;, &quot;&quot;))</span>
+<span class="fc" id="L150">					.andExpect(MockMvcResultMatchers.status().isPreconditionRequired());</span>
+<span class="fc" id="L151">	}</span>
+	
+	@Test
+	void testDelete() throws Exception {
+<span class="fc" id="L155">		this.mockMvc.perform(MockMvcRequestBuilders.delete(&quot;/user-images/&quot;)</span>
+<span class="fc" id="L156">						.param(&quot;idUser&quot;, ID_USER))</span>
+<span class="fc" id="L157">					.andExpect(MockMvcResultMatchers.status().isOk());</span>
+<span class="fc" id="L158">	}</span>
+
+	private UserImageResponseDto createResponseDTO(MockMultipartFile file) {
+<span class="fc" id="L161">		UserImageResponseDto dto = new UserImageResponseDto();</span>
+<span class="fc" id="L162">		dto.setFileName(file.getOriginalFilename());</span>
+<span class="fc" id="L163">		dto.setFileType(file.getContentType());</span>
+<span class="fc" id="L164">		dto.setUploadStatus(StatusUploadEnum.EM_ANDAMENTO.getStatus());</span>
+<span class="fc" id="L165">		dto.setIdUser(ID_USER);</span>
+<span class="fc" id="L166">		return dto;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span>challenge (25/01/2020 18:30:40)</div></body></html>

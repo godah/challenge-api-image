@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>UserImageService.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">challenge (25/01/2020 18:30:40)</a> &gt; <a href="../../index.html" class="el_group">challenge</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">com.luciano.challenge.service</a> &gt; <span class="el_source">UserImageService.java</span></div><h1>UserImageService.java</h1><pre class="source lang-java linenums">package com.luciano.challenge.service;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.luciano.challenge.domain.dto.UserImageResponseDto;
+import com.luciano.challenge.domain.enumerate.AllowedFileTypeEnum;
+import com.luciano.challenge.domain.enumerate.StatusUploadEnum;
+import com.luciano.challenge.exception.NoContentException;
+import com.luciano.challenge.exception.NotFoundException;
+import com.luciano.challenge.exception.PreconditionRequiredException;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.client.gridfs.GridFSFindIterable;
+import com.mongodb.client.gridfs.model.GridFSFile;
+
+@Service
+<span class="fc" id="L28">public class UserImageService {</span>
+	private static final String METADATA_FILE_NAME = &quot;metadata.fileName&quot;;
+
+	private static final String UPLOAD_STATUS = &quot;uploadStatus&quot;;
+
+	private static final String FILE_TYPE = &quot;fileType&quot;;
+
+	private static final String FILE_NAME = &quot;fileName&quot;;
+
+	private static final String ID_USER = &quot;idUser&quot;;
+
+	private static final String METADATA_ID_USER = &quot;metadata.idUser&quot;;
+
+	@Autowired
+	private GridFsTemplate gridFsTemplate;
+
+	public UserImageResponseDto createImage(MultipartFile file, String idUser) throws PreconditionRequiredException, IOException {
+		try {
+<span class="fc bfc" id="L46" title="All 2 branches covered.">			if (AllowedFileTypeEnum.get(file.getContentType()) == null)</span>
+<span class="fc" id="L47">				throw new PreconditionRequiredException(&quot;Content Type not allowed.&quot;);</span>
+<span class="fc" id="L48">			DBObject metaData = new BasicDBObject();</span>
+<span class="fc" id="L49">			metaData.put(ID_USER, idUser);</span>
+<span class="fc" id="L50">			metaData.put(FILE_NAME, file.getOriginalFilename());</span>
+<span class="fc" id="L51">			metaData.put(FILE_TYPE, file.getContentType());</span>
+<span class="fc" id="L52">			metaData.put(UPLOAD_STATUS, StatusUploadEnum.EM_ANDAMENTO.getStatus());</span>
+<span class="fc" id="L53">			ObjectId id = gridFsTemplate.store(file.getInputStream(), file.getName(), file.getContentType(), metaData);</span>
+<span class="fc" id="L54">			GridFSFile fileSaved = gridFsTemplate.findOne(new Query(Criteria.where(&quot;_id&quot;).is(id.toString())));</span>
+<span class="fc" id="L55">			return createResponse(fileSaved);</span>
+<span class="fc" id="L56">		} catch (IOException |PreconditionRequiredException e) {</span>
+<span class="fc" id="L57">			throw new PreconditionRequiredException(e.getMessage());</span>
+		}
+	}
+
+	private UserImageResponseDto createResponse(GridFSFile fileSaved) {
+<span class="fc" id="L62">		UserImageResponseDto image = new UserImageResponseDto();</span>
+<span class="fc" id="L63">		Document doc = fileSaved.getMetadata();</span>
+<span class="fc" id="L64">		image.setIdUser(doc.getString(ID_USER).toString());</span>
+<span class="fc" id="L65">		image.setFileName(doc.getString(FILE_NAME).toString());</span>
+<span class="fc" id="L66">		image.setFileType(doc.getString(FILE_TYPE).toString());</span>
+<span class="fc" id="L67">		image.setUploadStatus(doc.getString(UPLOAD_STATUS));</span>
+<span class="fc" id="L68">		return image;</span>
+	}
+
+	public List&lt;UserImageResponseDto&gt; getImage(String fileName) throws NotFoundException {
+		GridFSFindIterable files;
+<span class="pc bpc" id="L73" title="1 of 4 branches missed.">		if (fileName == null || fileName.isEmpty()) {</span>
+<span class="fc" id="L74">			files = gridFsTemplate.find(new Query());</span>
+<span class="fc" id="L75">		} else {</span>
+<span class="fc" id="L76">			files = gridFsTemplate.find(new Query(Criteria.where(METADATA_FILE_NAME).is(fileName)));</span>
+		}
+<span class="fc bfc" id="L78" title="All 2 branches covered.">		if (!files.iterator().hasNext())</span>
+<span class="fc" id="L79">			throw new NotFoundException();</span>
+
+<span class="fc" id="L81">		List&lt;UserImageResponseDto&gt; response = createResponse(files);</span>
+<span class="fc" id="L82">		return response;</span>
+	}
+
+	public List&lt;UserImageResponseDto&gt; delete(String idUser) throws NoContentException, PreconditionRequiredException {
+<span class="pc bpc" id="L86" title="1 of 4 branches missed.">		if (idUser == null || idUser.isEmpty()) {</span>
+<span class="fc" id="L87">			throw new PreconditionRequiredException();</span>
+		} else {
+<span class="fc" id="L89">			GridFSFindIterable files = gridFsTemplate.find(new Query(Criteria.where(METADATA_ID_USER).is(idUser)));</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">			if (!files.iterator().hasNext())</span>
+<span class="fc" id="L91">				throw new NoContentException();</span>
+
+<span class="fc" id="L93">			List&lt;UserImageResponseDto&gt; response = createResponse(files);</span>
+<span class="fc" id="L94">			gridFsTemplate.delete(new Query(Criteria.where(METADATA_ID_USER).is(idUser)));</span>
+<span class="fc" id="L95">			return response;</span>
+		}
+	}
+
+	private List&lt;UserImageResponseDto&gt; createResponse(GridFSFindIterable files) {
+<span class="fc" id="L100">		List&lt;UserImageResponseDto&gt; response = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">		for (GridFSFile file : files) {</span>
+<span class="fc" id="L102">			UserImageResponseDto image = new UserImageResponseDto();</span>
+<span class="fc" id="L103">			Document doc = file.getMetadata();</span>
+<span class="fc" id="L104">			image.setIdUser(doc.getString(ID_USER).toString());</span>
+<span class="fc" id="L105">			image.setFileName(doc.getString(FILE_NAME).toString());</span>
+<span class="fc" id="L106">			image.setFileType(doc.getString(FILE_TYPE).toString());</span>
+<span class="fc" id="L107">			image.setUploadStatus(doc.getString(UPLOAD_STATUS));</span>
+<span class="fc" id="L108">			response.add(image);</span>
+		}
+<span class="fc" id="L110">		return response;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span>challenge (25/01/2020 18:30:40)</div></body></html>
