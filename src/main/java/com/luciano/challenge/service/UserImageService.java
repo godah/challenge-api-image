@@ -7,12 +7,10 @@ import java.util.List;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.luciano.challenge.UserImageRepository;
 import com.luciano.challenge.domain.dto.UserImageResponseDto;
 import com.luciano.challenge.domain.enumerate.AllowedFileTypeEnum;
 import com.luciano.challenge.domain.enumerate.StatusUploadEnum;
@@ -26,20 +24,14 @@ import com.mongodb.client.gridfs.model.GridFSFile;
 
 @Service
 public class UserImageService {
-	private static final String METADATA_FILE_NAME = "metadata.fileName";
 
 	private static final String UPLOAD_STATUS = "uploadStatus";
-
 	private static final String FILE_TYPE = "fileType";
-
 	private static final String FILE_NAME = "fileName";
-
 	private static final String ID_USER = "idUser";
 
-	private static final String METADATA_ID_USER = "metadata.idUser";
-
 	@Autowired
-	private GridFsTemplate gridFsTemplate;
+	private UserImageRepository userImageRepository;
 
 	public UserImageResponseDto createImage(MultipartFile file, String idUser) throws PreconditionRequiredException, IOException {
 		try {
@@ -50,8 +42,8 @@ public class UserImageService {
 			metaData.put(FILE_NAME, file.getOriginalFilename());
 			metaData.put(FILE_TYPE, file.getContentType());
 			metaData.put(UPLOAD_STATUS, StatusUploadEnum.EM_ANDAMENTO.getStatus());
-			ObjectId id = gridFsTemplate.store(file.getInputStream(), file.getName(), file.getContentType(), metaData);
-			GridFSFile fileSaved = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(id.toString())));
+			ObjectId id = userImageRepository.save(file, metaData);
+			GridFSFile fileSaved = userImageRepository.findById(id);
 			return createResponse(fileSaved);
 		} catch (IOException |PreconditionRequiredException e) {
 			throw new PreconditionRequiredException(e.getMessage());
@@ -71,9 +63,9 @@ public class UserImageService {
 	public List<UserImageResponseDto> getImage(String fileName) throws NotFoundException {
 		GridFSFindIterable files;
 		if (fileName == null || fileName.isEmpty()) {
-			files = gridFsTemplate.find(new Query());
+			files = userImageRepository.findAll();
 		} else {
-			files = gridFsTemplate.find(new Query(Criteria.where(METADATA_FILE_NAME).is(fileName)));
+			files = userImageRepository.findByFileName(fileName);
 		}
 		if (!files.iterator().hasNext())
 			throw new NotFoundException();
@@ -86,12 +78,11 @@ public class UserImageService {
 		if (idUser == null || idUser.isEmpty()) {
 			throw new PreconditionRequiredException();
 		} else {
-			GridFSFindIterable files = gridFsTemplate.find(new Query(Criteria.where(METADATA_ID_USER).is(idUser)));
+			GridFSFindIterable files = userImageRepository.findByIdUser(idUser);
 			if (!files.iterator().hasNext())
 				throw new NoContentException();
-
 			List<UserImageResponseDto> response = createResponse(files);
-			gridFsTemplate.delete(new Query(Criteria.where(METADATA_ID_USER).is(idUser)));
+			userImageRepository.deleteByUserId(idUser);
 			return response;
 		}
 	}
