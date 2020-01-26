@@ -160,8 +160,9 @@ class UserImageControllerTest {
 	private UserImageResponseDto createResponseDTO(MockMultipartFile file) {
 		UserImageResponseDto dto = new UserImageResponseDto();
 		dto.setFileName(file.getOriginalFilename());
-		dto.setFileType(file.getContentType());
-		dto.setUploadStatus(StatusUploadEnum.EM_ANDAMENTO.getStatus());
+		AllowedFileTypeEnum fileType = AllowedFileTypeEnum.get(file.getContentType());
+		dto.setFileType(fileType.getFileType());
+		dto.setUploadStatus(StatusUploadEnum.CONCLUIDO.getStatus());
 		dto.setIdUser(ID_USER);
 		return dto;
 	}
