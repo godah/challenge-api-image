@@ -1,6 +1,20 @@
 version: '3'
 
 services:
+  springboot:
+    build: .
+    environment:
+      - DATABASE_URI=mongo
+    container_name: challenge_api
+    ports:
+      - 80:8080
+    depends_on:
+      - mongo
+    links:
+      - mongo
+    networks:
+      - challenge-network
+
   mongo-express:
     image: mongo-express
     restart: always
