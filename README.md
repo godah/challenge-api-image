@@ -2,9 +2,13 @@
 A challenge to build an API with springboot and mongodb
 
 
+# Run dev
+$ ./mvnw spring-boot:run
 
 # Run tests
 $ ./mvnw test
+
+
 
 
 
@@ -13,7 +17,7 @@ $ ./mvnw test
 
 
 # 1 - Build Springboot
-$ ./mvnw -Pprod package -DskipTests
+$ ./mvnw package -DskipTests
 
 
 # 2 - Docker run
@@ -23,8 +27,8 @@ $ sudo docker-compose up -d
 # 3 - Docker containers production
 Mongo: http://localhost:27017
 Mongo Express: http://localhost:8081/
-Swagger: http://localhost/swagger-ui.html
-Challenge API: http://localhost (port 80)
+Swagger: https://localhost/swagger-ui.html
+Challenge API: https://localhost (port 80 redirect to 443)
 
 
 # 4 - Docker stop
