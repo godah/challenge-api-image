@@ -2,7 +2,13 @@
 A challenge to build an API with springboot and mongodb
 
 
-#Development environment (infra)
+
+# AWS EC2 running
+Swagger: https://54.235.5.8/swagger-ui.html
+Api-docs: https://54.235.5.8/v2/api-docs
+
+
+# Development environment (infra)
 -Linux: Xubuntu 18.04
 -OpenJDK: 8
 -Eclipse: Version: 2019-12 (4.14.0)
@@ -10,7 +16,6 @@ A challenge to build an API with springboot and mongodb
 -docker-compose: version 1.17.1
 -MongoDB: 4.2.2 (Under docker)
 -openjdk: 8-alpine (Under docker)
-
 
 
 
