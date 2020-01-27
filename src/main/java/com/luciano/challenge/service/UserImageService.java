@@ -54,7 +54,7 @@ public class UserImageService {
 			return createResponse(fileSaved);
 		} catch (IOException e) {
 			userImageRepository.updateStatusByID(id, StatusUploadEnum.FALHA.getStatus());
-			log.error(e.getMessage());
+			log.error(e.getMessage(), e);
 			throw new IOException(e.getMessage());
 		} catch (PreconditionRequiredException e) {
 			throw new PreconditionRequiredException(e.getMessage());
@@ -62,8 +62,7 @@ public class UserImageService {
 	}
 
 	private UserImageResponseDto createResponse(GridFSFile fileSaved) {
-		UserImageResponseDto image = buildUserImageResponseDto(fileSaved);
-		return image;
+		return buildUserImageResponseDto(fileSaved);
 	}
 
 	public List<UserImageResponseDto> getImage(String fileName) throws NotFoundException {
@@ -76,8 +75,7 @@ public class UserImageService {
 		if (!files.iterator().hasNext())
 			throw new NotFoundException();
 
-		List<UserImageResponseDto> response = createResponse(files);
-		return response;
+		return createResponse(files);
 	}
 
 	public List<UserImageResponseDto> delete(String idUser) throws NoContentException, PreconditionRequiredException {
